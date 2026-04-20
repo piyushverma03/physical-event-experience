@@ -146,6 +146,10 @@ async def process_iot_event(event: Dict[str, Any]):
         "stadium_id": sid,
         "metrics": metrics,
         "thresholds": thresholds,
+        "timestamp": event.get("timestamp", time.time()),
+        "sim_time": event.get("sim_time"),
+        "state": event.get("state", "UNKNOWN"),
+        "time_mult": event.get("time_mult", 1.0)
     })
 
     # Trigger AI Brain for critical nodes

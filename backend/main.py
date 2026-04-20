@@ -30,16 +30,25 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from backend.database import init_db, seed_data, get_conn
+from pydantic import BaseModel
 from backend.models import (
     EmployeeLoginRequest, AttendeeLoginRequest, TokenResponse,
     LayoutPayload, SurgeRequest, ThresholdUpdate
 )
+
+class ScheduleRequest(BaseModel):
+    start_time: float
+    end_time: float
+    deviation_minutes: float
+
+class MockTimeRequest(BaseModel):
+    multiplier: float
 from backend.auth import (
     authenticate_employee, authenticate_attendee,
     create_access_token, require_employee, require_admin, get_current_user
 )
 from backend.tools.mcp_tools import save_user_layout, fetch_historical_flow
-from backend.tools.mock_iot import init_iot, inject_surge, iot_loop
+from backend.tools.mock_iot import init_iot, inject_surge, iot_loop, reset_occupancy, set_schedule, set_time_multiplier
 from backend.tools.image_processor import process_stadium_image
 
 import backend.agents.spatial_architect as spatial
@@ -149,6 +158,10 @@ async def startup():
 
 # ── HTML Pages ─────────────────────────────────────────────────────────────────
 @app.get("/")
+async def serve_landing():
+    return FileResponse(str(FRONTEND_DIR / "landing.html"))
+
+@app.get("/login")
 async def serve_login():
     return FileResponse(str(FRONTEND_DIR / "login.html"))
 
@@ -243,6 +256,36 @@ async def inject_surge_endpoint(sid: str, req: SurgeRequest, _=Depends(require_e
         "severity": "WARN",
     })
     return {"success": True, "node_id": req.node_id, "magnitude": req.magnitude}
+
+
+@app.post("/stadiums/{sid}/reset")
+async def reset_system_endpoint(sid: str, _=Depends(require_admin)):
+    reset_occupancy(sid)
+    # Give a tiny pause to clear out any residual surges
+    await asyncio.sleep(0.5) 
+    await bus["ws_broadcast"].put({
+        "type": "agent_event",
+        "agent": "SYS",
+        "message": "Global reset initiated. Occupancy cleared and clock reset.",
+        "severity": "INFO",
+    })
+    return {"success": True}
+
+@app.post("/stadiums/{sid}/schedule")
+async def set_schedule_endpoint(sid: str, req: ScheduleRequest, _=Depends(require_admin)):
+    set_schedule(sid, req.start_time, req.end_time, req.deviation_minutes)
+    await bus["ws_broadcast"].put({
+        "type": "agent_event",
+        "agent": "SYS",
+        "message": f"Event schedule updated. Deviation: {req.deviation_minutes}m.",
+        "severity": "INFO",
+    })
+    return {"success": True}
+
+@app.post("/stadiums/{sid}/mock-time")
+async def set_mock_time_endpoint(sid: str, req: MockTimeRequest, _=Depends(require_admin)):
+    set_time_multiplier(sid, req.multiplier)
+    return {"success": True, "multiplier": req.multiplier}
 
 
 @app.get("/stadiums/{sid}/flow-history")

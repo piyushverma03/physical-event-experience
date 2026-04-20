@@ -121,18 +121,24 @@ def init_db():
         )
     """)
 
-    # ── Per-Stadium Thresholds ──────────────────────────────────────
+    # ── Per-Stadium Thresholds ──────────────────────────────────
     c.execute("""
         CREATE TABLE IF NOT EXISTS stadium_thresholds (
-            stadium_id          TEXT PRIMARY KEY,
-            empty_threshold     REAL DEFAULT 0.15,
-            green_threshold     REAL DEFAULT 0.40,
-            busy_threshold      REAL DEFAULT 0.55,
-            critical_threshold  REAL DEFAULT 0.75,
-            updated_at          TEXT DEFAULT (datetime('now')),
+            stadium_id           TEXT PRIMARY KEY,
+            empty_threshold      REAL DEFAULT 0.15,
+            green_threshold      REAL DEFAULT 0.40,
+            busy_threshold       REAL DEFAULT 0.55,
+            critical_threshold   REAL DEFAULT 0.75,
+            venue_capacity_limit INTEGER DEFAULT 75000,
+            updated_at           TEXT DEFAULT (datetime('now')),
             FOREIGN KEY (stadium_id) REFERENCES stadiums(id) ON DELETE CASCADE
         )
     """)
+    # Migrate: add venue_capacity_limit if column is missing (existing DB)
+    try:
+        c.execute("ALTER TABLE stadium_thresholds ADD COLUMN venue_capacity_limit INTEGER DEFAULT 75000")
+    except Exception:
+        pass  # Column already exists
 
     conn.commit()
     conn.close()
@@ -202,3 +208,13 @@ def seed_data():
 
     conn.commit()
     conn.close()
+
+
+def reset_demo(stadium_id: str):
+    """Clear all runtime metrics and directives — for prototype reset."""
+    conn = get_conn()
+    conn.execute("DELETE FROM flow_metrics   WHERE stadium_id=?", (stadium_id,))
+    conn.execute("DELETE FROM ai_directives  WHERE stadium_id=?", (stadium_id,))
+    conn.commit()
+    conn.close()
+    print(f"[DB] Demo reset for {stadium_id}")

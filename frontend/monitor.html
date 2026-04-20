@@ -207,7 +207,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    if (!API.token() || API.role() === 'attendee') window.location.href = '/';
+    if (!API.token() || API.role() === 'attendee') window.location.href = '/login';
     document.getElementById('nav-name').textContent = API.name();
     const role = API.role();
     document.getElementById('nav-role-badge').textContent = role.charAt(0).toUpperCase() + role.slice(1);

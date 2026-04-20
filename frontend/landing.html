@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Arena OS — Redefining Movement</title>
+  <meta name="description" content="AI-powered crowd intelligence platform."/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/landing.css"/>
+</head>
+<body class="perspective-user"> <!-- Default perspective -->
+
+  <!-- LOADER -->
+  <div id="loader" class="loader">
+    <canvas id="loader-canvas"></canvas>
+    <div class="loader-content">
+      <div class="loader-lines">
+        <div class="loader-line"></div>
+        <div class="loader-line"></div>
+        <div class="loader-line"></div>
+        <div class="loader-line"></div>
+        <div class="loader-line"></div>
+      </div>
+      <p class="loader-quote" id="loader-quote">Crowds are not chaos. They are patterns.</p>
+      <div class="loader-bar-track">
+        <div class="loader-bar-fill" id="loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERSPECTIVE TOGGLE -->
+  <div class="perspective-toggle-wrapper">
+    <div class="perspective-toggle">
+      <button class="pt-btn active" data-perspective="user">User Experience</button>
+      <button class="pt-btn" data-perspective="admin">Admin Control</button>
+    </div>
+  </div>
+
+  <!-- BACKGROUND -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- NAVBAR -->
+  <nav class="landing-nav" id="landing-nav">
+    <div class="nav-logo-landing">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="nav-icon">
+        <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M12 12L2 7M12 12l10-5M12 12v10" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+      </svg>
+      NEXUS ARENA
+    </div>
+    <div class="nav-links-landing">
+      <a href="#hero" class="nav-link-l">Overview</a>
+      <a href="#problem" class="nav-link-l">Problem</a>
+      <a href="#solution" class="nav-link-l">Solution</a>
+      <a href="#features" class="nav-link-l">Features</a>
+      <a href="#system" class="nav-link-l">System</a>
+    </div>
+    <div class="nav-actions-landing">
+      <a href="/login" class="btn-enter">Enter Platform →</a>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main id="main-content" class="main-content">
+
+    <!-- HERO -->
+    <section id="hero" class="section section-hero">
+      <div class="hero-inner">
+        <div class="hero-tag reveal-element" data-delay="0">
+          <span class="tag-dot"></span>
+          CROWD INTELLIGENCE PLATFORM
+        </div>
+        <h1 class="hero-headline reveal-element split-text" data-delay="100">
+          <span class="word">Redefining</span>
+          <span class="word accent">Movement</span>
+          <br/>
+          <span class="word">Inside</span>
+          <span class="word">Stadiums.</span>
+        </h1>
+        <p class="hero-sub reveal-element" data-delay="300">
+          Real-time AI optimization of crowd flow across large-scale sporting venues.<br/>
+          Predict. Adapt. Guide — before congestion happens.
+        </p>
+        <div class="hero-cta-row reveal-element" data-delay="450">
+          <a href="#solution" class="btn-primary-landing">Explore the System</a>
+          <a href="#problem" class="btn-ghost-landing">
+            <span class="btn-ghost-icon">▶</span>
+            See the Problem
+          </a>
+        </div>
+        <div class="hero-stats reveal-element stat-group" data-delay="600">
+          <div class="hero-stat">
+            <span class="hero-stat-value" data-count="100000">0</span><span class="hero-stat-suffix">+</span>
+            <span class="hero-stat-label">Scalable Capacity</span>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <span class="hero-stat-value" data-count="200">0</span><span class="hero-stat-suffix">ms</span>
+            <span class="hero-stat-label">Response Time</span>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <span class="hero-stat-value" data-count="89">0</span><span class="hero-stat-suffix">%</span>
+            <span class="hero-stat-label">Congestion Reduced</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-scroll-indicator reveal-element" data-delay="800">
+        <div class="scroll-line"></div>
+        <span>Scroll to explore</span>
+      </div>
+    </section>
+
+    <!-- PROBLEM -->
+    <section id="problem" class="section section-problem">
+      <div class="section-inner">
+        <div class="problem-counter reveal-element">
+          <span class="counter-big" data-count="100000">0</span><span class="counter-suffix">+</span>
+          <span class="counter-label">capacity</span>
+        </div>
+        <h2 class="problem-headline reveal-element split-text">
+          <span class="word">Thousands</span>
+          <span class="word">arriving.</span>
+          <span class="word">One</span>
+          <span class="word">venue.</span>
+          <br/>
+          <span class="word accent-red">No</span>
+          <span class="word accent-red">coordination.</span>
+        </h2>
+        <p class="problem-sub reveal-element" data-delay="200">
+          Every major event is a logistical challenge. Thousands of people arrive simultaneously,
+          flooding narrow corridors, overwhelming gates, and creating invisible bottlenecks
+          that ripple through the entire venue.
+        </p>
+      </div>
+    </section>
+
+    <!-- CHALLENGES -->
+    <section id="challenges" class="section section-challenges">
+      <div class="section-inner">
+        <div class="challenge-label reveal-element">THE CHALLENGE</div>
+        <div class="challenges-grid">
+          <div class="challenge-card reveal-card" data-delay="0">
+            <div class="challenge-icon">⚡</div>
+            <h3 class="challenge-title">Long Queues</h3>
+            <p class="challenge-desc">Entry gates overwhelmed by simultaneous arrivals. Wait times averaging 25+ minutes at peak capacity.</p>
+            <div class="challenge-stat">
+              <span class="cs-value">25+</span>
+              <span class="cs-unit">min avg wait</span>
+            </div>
+          </div>
+          <div class="challenge-card reveal-card" data-delay="100">
+            <div class="challenge-icon">🛑</div>
+            <h3 class="challenge-title">Congested Pathways</h3>
+            <p class="challenge-desc">Corridors and concourses become impassable. Crowd density exceeds safe thresholds regularly.</p>
+            <div class="challenge-stat">
+              <span class="cs-value">4.2</span>
+              <span class="cs-unit">ppl/m² peak density</span>
+            </div>
+          </div>
+          <div class="challenge-card reveal-card" data-delay="200">
+            <div class="challenge-icon">⏱</div>
+            <h3 class="challenge-title">Delayed Responses</h3>
+            <p class="challenge-desc">Staff react to problems after they escalate. No predictive intelligence or early warning systems.</p>
+            <div class="challenge-stat">
+              <span class="cs-value">12</span>
+              <span class="cs-unit">min response lag</span>
+            </div>
+          </div>
+          <div class="challenge-card reveal-card" data-delay="300">
+            <div class="challenge-icon">🔇</div>
+            <h3 class="challenge-title">Poor Communication</h3>
+            <p class="challenge-desc">Fragmented systems between staff, security, and attendees. No unified real-time information flow.</p>
+            <div class="challenge-stat">
+              <span class="cs-value">0</span>
+              <span class="cs-unit">real-time channels</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRANSITION -->
+    <section id="transition" class="section section-transition">
+      <div class="transition-inner reveal-element">
+        <div class="transition-line"></div>
+        <h2 class="transition-text">
+          What if movement was <span class="accent-glow">predictable</span>?
+        </h2>
+        <div class="transition-line"></div>
+      </div>
+    </section>
+
+    <!-- SOLUTION -->
+    <section id="solution" class="section section-solution">
+      <div class="section-inner">
+        <div class="solution-tag reveal-element">THE SOLUTION</div>
+        <h2 class="solution-headline reveal-element" data-delay="100">
+          We build systems that <span class="accent">understand</span>,<br/>
+          <span class="accent">predict</span>, and <span class="accent">guide</span><br/>
+          crowd behavior in real time.
+        </h2>
+        <p class="solution-sub reveal-element" data-delay="200">
+          Nexus Arena OS is an AI-driven platform that transforms chaotic crowd movement
+          into orchestrated, safe, and efficient flow — before problems emerge.
+        </p>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="section section-features">
+      <div class="section-inner">
+        <div class="features-header">
+          <div class="features-tag reveal-element">CAPABILITIES</div>
+          <h2 class="features-headline reveal-element" data-delay="100">
+            Intelligent Infrastructure<br/>for Live Events
+          </h2>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card reveal-card" data-delay="0">
+            <div class="feature-glow"></div>
+            <div class="feature-number">01</div>
+            <h3 class="feature-title">Crowd Flow Optimization</h3>
+            <p class="feature-desc">AI-driven pathfinding algorithms that redistribute crowd density across all venue corridors and gates in real time.</p>
+          </div>
+          <div class="feature-card reveal-card" data-delay="100">
+            <div class="feature-glow"></div>
+            <div class="feature-number">02</div>
+            <h3 class="feature-title">Smart Queue Management</h3>
+            <p class="feature-desc">M/M/1 queue theory models predict wait times and dynamically reassign attendees to less congested entry points.</p>
+          </div>
+          <div class="feature-card reveal-card" data-delay="200">
+            <div class="feature-glow"></div>
+            <div class="feature-number">03</div>
+            <h3 class="feature-title">Real-Time Alerts</h3>
+            <p class="feature-desc">Instant notifications to staff and attendees when density exceeds safe thresholds, with AI-generated response directives.</p>
+          </div>
+          <div class="feature-card reveal-card" data-delay="300">
+            <div class="feature-glow"></div>
+            <div class="feature-number">04</div>
+            <h3 class="feature-title">Venue Navigation System</h3>
+            <p class="feature-desc">Personalized wayfinding for every attendee, from ticket gate to seat, with continuous rerouting based on live conditions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SYSTEM LAYER -->
+    <section id="system" class="section section-system">
+      <div class="section-inner">
+        <div class="system-tag reveal-element">UNDER THE HOOD</div>
+        <h2 class="system-headline reveal-element" data-delay="100">
+          The Technical Depth
+        </h2>
+        <div class="system-grid">
+          <div class="system-card reveal-card" data-delay="0">
+            <div class="sys-icon">
+              <div class="sys-pulse"></div>
+              🧠
+            </div>
+            <h3 class="sys-title">AI-Driven Insights</h3>
+            <p class="sys-desc">Multi-agent mesh with Spatial Architect, Flow Physicist, and AI Brain agents working in concert to analyze and predict crowd behavior.</p>
+            <code class="sys-code">J = ρ × v</code>
+          </div>
+          <div class="system-card reveal-card" data-delay="120">
+            <div class="sys-icon">
+              <div class="sys-pulse"></div>
+              📡
+            </div>
+            <h3 class="sys-title">Live Data Integration</h3>
+            <p class="sys-desc">Real-time IoT sensor streams, ticket scan events, and crowd density measurements feed directly into the analytics pipeline.</p>
+            <code class="sys-code">ws://nexus/stream</code>
+          </div>
+          <div class="system-card reveal-card" data-delay="240">
+            <div class="sys-icon">
+              <div class="sys-pulse"></div>
+              🔀
+            </div>
+            <h3 class="sys-title">Adaptive Routing</h3>
+            <p class="sys-desc">Dynamic path recalculation every 4 seconds, automatically rerouting crowd flow through the venue's graph network when congestion is detected.</p>
+            <code class="sys-code">Δt = 4s</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="cta" class="section section-cta">
+      <div class="cta-inner">
+        <div class="cta-glow"></div>
+        <h2 class="cta-headline reveal-element">
+          Design the future of<br/><span class="accent-glow">live events.</span>
+        </h2>
+        <p class="cta-sub reveal-element" data-delay="100">
+          Step into the control layer. Monitor, predict, and guide —<br/>
+          all from a single intelligent platform.
+        </p>
+        <div class="cta-buttons reveal-element" data-delay="200">
+          <a href="/login" class="btn-cta-primary">
+            Enter Nexus Arena OS
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // PERSPECTIVE TOGGLE
+      const buttons = document.querySelectorAll('.pt-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const perspective = btn.getAttribute('data-perspective');
+          document.body.className = `perspective-${perspective} loaded`;
+          // Retrigger animations slightly for effect
+          const revealed = document.querySelectorAll('.revealed');
+          revealed.forEach(r => {
+             r.classList.remove('revealed');
+             setTimeout(() => r.classList.add('revealed'), 50);
+          });
+        });
+      });
+
+      // LOADER
+      const loader = document.getElementById('loader');
+      const loaderCanvas = document.getElementById('loader-canvas');
+      const loaderCtx = loaderCanvas.getContext('2d');
+      const loaderBar = document.getElementById('loader-bar');
+      const loaderQuote = document.getElementById('loader-quote');
+      let loaderProgress = 0;
+
+      function resizeLoaderCanvas() {
+        loaderCanvas.width = window.innerWidth;
+        loaderCanvas.height = window.innerHeight;
+      }
+      resizeLoaderCanvas();
+      window.addEventListener('resize', resizeLoaderCanvas);
+
+      let loaderGridAlpha = 0;
+      let loaderFrame = 0;
+      function drawLoaderGrid() {
+        const W = loaderCanvas.width;
+        const H = loaderCanvas.height;
+        loaderCtx.clearRect(0, 0, W, H);
+        loaderGridAlpha = Math.min(loaderGridAlpha + 0.01, 0.15);
+        const spacing = 50;
+        const offset = (loaderFrame * 0.5) % spacing;
+
+        loaderCtx.strokeStyle = `rgba(79,124,255,${loaderGridAlpha})`;
+        loaderCtx.lineWidth = 1;
+
+        for (let x = -spacing + offset; x < W + spacing; x += spacing) {
+          loaderCtx.beginPath(); loaderCtx.moveTo(x, 0); loaderCtx.lineTo(x, H); loaderCtx.stroke();
+        }
+        for (let y = -spacing + offset; y < H + spacing; y += spacing) {
+          loaderCtx.beginPath(); loaderCtx.moveTo(0, y); loaderCtx.lineTo(W, y); loaderCtx.stroke();
+        }
+        loaderFrame++;
+      }
+
+      function animateLoader() {
+        if (loaderProgress < 100) {
+          loaderProgress += 1.5;
+          loaderBar.style.width = loaderProgress + '%';
+          drawLoaderGrid();
+          requestAnimationFrame(animateLoader);
+        } else {
+          loaderQuote.style.opacity = '1';
+          setTimeout(() => {
+            loader.classList.add('loader-exit');
+            setTimeout(() => {
+              loader.style.display = 'none';
+              document.body.classList.add('loaded');
+              initMain();
+            }, 800);
+          }, 800);
+        }
+      }
+      setTimeout(() => loaderQuote.style.opacity = '1', 200);
+      animateLoader();
+
+
+      function initMain() {
+        // BACKGROUND PARTICLES
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let bgW = bgCanvas.width = window.innerWidth;
+        let bgH = bgCanvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+          bgW = bgCanvas.width = window.innerWidth;
+          bgH = bgCanvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        for(let i=0; i<80; i++){
+          particles.push({
+            x: Math.random() * bgW,
+            y: Math.random() * bgH,
+            r: Math.random() * 2 + 0.5,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5
+          });
+        }
+
+        function drawBg(){
+          bgCtx.clearRect(0,0,bgW,bgH);
+          const isUser = document.body.classList.contains('perspective-user');
+          const maxDist = isUser ? 100 : 150;
+          const color = isUser ? 'rgba(79,124,255,' : 'rgba(255,77,109,';
+
+          particles.forEach(p => {
+             // Admin mode: particles move faster and in sharper directions
+             let targetVx = isUser ? p.vx : (Math.sign(p.vx)*1.5);
+             let targetVy = isUser ? p.vy : (Math.sign(p.vy)*1.5);
+             
+             p.x += targetVx;
+             p.y += targetVy;
+             if(p.x < 0 || p.x > bgW) p.vx *= -1;
+             if(p.y < 0 || p.y > bgH) p.vy *= -1;
+
+             bgCtx.beginPath();
+             bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+             bgCtx.fillStyle = color + '0.5)';
+             bgCtx.fill();
+          });
+
+          for(let i=0; i<particles.length; i++){
+            for(let j=i+1; j<particles.length; j++){
+               const dx = particles[i].x - particles[j].x;
+               const dy = particles[i].y - particles[j].y;
+               const dist = Math.sqrt(dx*dx + dy*dy);
+               if(dist < maxDist) {
+                  bgCtx.beginPath();
+                  bgCtx.moveTo(particles[i].x, particles[i].y);
+                  bgCtx.lineTo(particles[j].x, particles[j].y);
+                  bgCtx.strokeStyle = color + (1 - dist/maxDist)*0.2 + ')';
+                  if(!isUser && Math.random() > 0.5) {
+                      bgCtx.strokeStyle = color + (1 - dist/maxDist)*0.5 + ')'; // glitch effect for admin
+                  }
+                  bgCtx.stroke();
+               }
+            }
+          }
+          requestAnimationFrame(drawBg);
+        }
+        drawBg();
+
+        // SCROLL REVEAL (Intersection Observer)
+        const reveals = document.querySelectorAll('.reveal-element, .reveal-card, .word');
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting) {
+              const delay = entry.target.dataset.delay || 0;
+              setTimeout(() => {
+                entry.target.classList.add('revealed');
+              }, delay);
+            }
+          });
+        }, { threshold: 0.15 });
+        reveals.forEach(r => observer.observe(r));
+
+        // COUNTERS
+        const counters = document.querySelectorAll('.hero-stat-value, .counter-big, .cs-value');
+        const countObserver = new IntersectionObserver((entries) => {
+           entries.forEach(entry => {
+              if(entry.isIntersecting && !entry.target.dataset.counted) {
+                 entry.target.dataset.counted = true;
+                 const finalVal = parseFloat(entry.target.dataset.count || entry.target.innerText);
+                 let current = 0;
+                 const increment = finalVal / 60;
+                 const interval = setInterval(() => {
+                    current += increment;
+                    if(current >= finalVal) {
+                       current = finalVal;
+                       clearInterval(interval);
+                    }
+                    entry.target.innerText = Math.floor(current).toLocaleString() + (entry.target.innerText.includes('.') ? '+' : '');
+                 }, 30);
+              }
+           });
+        });
+        counters.forEach(c => countObserver.observe(c));
+
+        // NAVBAR SCROLL
+        const nav = document.getElementById('landing-nav');
+        window.addEventListener('scroll', () => {
+           if(window.scrollY > 50) nav.classList.add('scrolled');
+           else nav.classList.remove('scrolled');
+        });
+
+      }
+    })();
+  </script>
+</body>
+</html>

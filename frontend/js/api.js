@@ -1,6 +1,6 @@
 /* api.js ─ Shared API client + WebSocket manager */
 
-const BASE = 'http://localhost:8000';
+const BASE = '';
 let _ws = null;
 const _wsHandlers = [];
 
@@ -56,7 +56,7 @@ export const API = {
 
   logout() {
     ['nexus_token','nexus_role','nexus_name','nexus_stadium_id'].forEach(k => localStorage.removeItem(k));
-    window.location.href = '/';
+    window.location.href = '/login';
   },
 
   /* ── Stadium ──────────────────────────────────────────────────────────── */
@@ -72,6 +72,13 @@ export const API = {
   postLayout(sid, payload) { return this.post(`/stadiums/${sid}/layout`, payload); },
   postSurge(sid, node_id, magnitude) {
     return this.post(`/stadiums/${sid}/surge`, { node_id, magnitude });
+  },
+  postReset(sid) { return this.post(`/stadiums/${sid}/reset`, {}); },
+  postSchedule(sid, start_time, end_time, deviation_minutes) {
+    return this.post(`/stadiums/${sid}/schedule`, { start_time, end_time, deviation_minutes });
+  },
+  postMockTime(sid, multiplier) {
+    return this.post(`/stadiums/${sid}/mock-time`, { multiplier });
   },
   markEntered(sid, tid) { return this.patch(`/stadiums/${sid}/tickets/${tid}/enter`); },
 
@@ -103,7 +110,8 @@ export const API = {
   /* ── WebSocket ────────────────────────────────────────────────────────── */
   connectWS() {
     if (_ws && _ws.readyState === WebSocket.OPEN) return;
-    _ws = new WebSocket('ws://localhost:8000/ws');
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    _ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
     _ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);

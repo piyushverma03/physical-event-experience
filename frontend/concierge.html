@@ -107,7 +107,7 @@
   <script type="module">
     import { API, showToast, fmtTime, statusClass } from '/static/js/api.js';
 
-    if (!API.token() || API.role() === 'attendee') window.location.href = '/';
+    if (!API.token() || API.role() === 'attendee') window.location.href = '/login';
     document.getElementById('nav-name').textContent = API.name();
     const role = API.role();
     document.getElementById('nav-role-badge').textContent = role.charAt(0).toUpperCase() + role.slice(1);

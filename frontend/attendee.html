@@ -114,7 +114,7 @@
   <script type="module">
     import { API, showToast, densityColor, statusClass } from '/static/js/api.js';
 
-    if (!API.token() || API.role() !== 'attendee') window.location.href = '/';
+    if (!API.token() || API.role() !== 'attendee') window.location.href = '/login';
     window.API = API;
 
     let currentGate = null;

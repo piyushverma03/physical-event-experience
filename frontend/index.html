@@ -52,9 +52,24 @@
         <div class="section-sub" id="stadium-sub">Initializing agent mesh…</div>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
-        <div style="font-size:0.77rem; color:var(--text-muted);" id="last-update">—</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); text-align:right;">
+            <div id="last-update">—</div>
+            <div id="sim-time-display" style="font-family:'JetBrains Mono'; color:var(--amber);">00:00:00</div>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; align-items:center; margin: 0 10px;">
+           <label style="font-size:0.65rem; color:var(--text-muted);">Sim Speed: <span id="speed-val">1x</span></label>
+           <input type="range" id="sim-speed" min="1" max="300" value="1" oninput="updateSimSpeed(this.value)" style="width:70px;">
+        </div>
+
+        <button class="btn btn-ghost" id="btn-reset" onclick="resetSystem()">
+          🔄 Reset Config
+        </button>
+        <button class="btn btn-secondary" onclick="openConfigModal()" style="border:1px solid rgba(255,255,255,0.2);">
+          ⚙️ Event
+        </button>
         <button class="btn btn-danger" id="btn-surge" onclick="openSurgeModal()">
-          ⚡ Inject Surge
+          ⚡ Surge
         </button>
       </div>
     </div>
@@ -257,12 +272,36 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="config-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 style="margin:0;font-size:1.1rem;">Configure Event Schedule</h3>
+        <button class="btn btn-ghost" onclick="closeConfigModal()">✕</button>
+      </div>
+      
+      <div style="margin-bottom:15px;">
+         <label style="display:block; margin-bottom:5px; font-size:0.85rem; color:var(--text-muted);">Start Time (Today)</label>
+         <input type="time" class="input" id="cfg-start" value="20:00">
+      </div>
+      <div style="margin-bottom:15px;">
+         <label style="display:block; margin-bottom:5px; font-size:0.85rem; color:var(--text-muted);">End Time (Today)</label>
+         <input type="time" class="input" id="cfg-end" value="22:00">
+      </div>
+      <div style="margin-bottom:20px;">
+         <label style="display:block; margin-bottom:5px; font-size:0.85rem; color:var(--text-muted);">Allowed Entry Deviation (Minutes)</label>
+         <input type="number" class="input" id="cfg-dev" value="30">
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" onclick="submitConfig()">Save & Activate Schedule</button>
+    </div>
+  </div>
+
   <div id="toast-container"></div>
 
   <script type="module">
     import { API, showToast, fmtTime, statusClass, densityColor } from '/static/js/api.js';
 
-    if (!API.token() || API.role() === 'attendee') window.location.href = '/';
+    if (!API.token() || API.role() === 'attendee') window.location.href = '/login';
 
     document.getElementById('nav-name').textContent = API.name();
     const role = API.role();
@@ -444,7 +483,6 @@
 
         document.getElementById('stadium-sub').textContent =
           `Nexus Grand Stadium · ${gateNodes.length} gates · Last updated ${new Date().toLocaleTimeString()}`;
-        document.getElementById('last-update').textContent = `Updated ${new Date().toLocaleTimeString()}`;
       } catch(e) { console.error('Metrics update error:', e); }
     }
 
@@ -477,6 +515,15 @@
       if (msg.type === 'agent_event') addLog(msg);
       if (msg.type === 'heatmap_update') {
         if (msg.thresholds) liveThresholds = msg.thresholds;
+        
+        if(msg.sim_time) {
+            const simTime = new Date(msg.sim_time * 1000);
+            document.getElementById('sim-time-display').textContent = `[${msg.state}] ${simTime.toLocaleTimeString()}`;
+        }
+        if(msg.timestamp) {
+            document.getElementById('last-update').textContent = `Last update: ${fmtTime(msg.timestamp)}`;
+        }
+        
         updateMetrics();
       }
       if (msg.type === 'ai_directive' && msg.target === 'employee') {
@@ -508,6 +555,51 @@
       feed.scrollTop = feed.scrollHeight;
     }
 
+    // ── Modals / Forms ──────────────────────────────────────────────────────
+    window.openConfigModal = () => document.getElementById('config-modal').classList.add('active');
+    window.closeConfigModal = () => document.getElementById('config-modal').classList.remove('active');
+
+    window.submitConfig = async () => {
+      try {
+        const d = new Date();
+        const startStr = document.getElementById('cfg-start').value.split(':');
+        const endStr = document.getElementById('cfg-end').value.split(':');
+        
+        const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), parseInt(startStr[0]), parseInt(startStr[1])).getTime() / 1000;
+        const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), parseInt(endStr[0]), parseInt(endStr[1])).getTime() / 1000;
+        const dev = parseFloat(document.getElementById('cfg-dev').value);
+        
+        await API.postSchedule(sid, start, end, dev);
+        showToast('Schedule Locked', 'Event timings have been configured.', 'info');
+        closeConfigModal();
+      } catch(e) {
+        showToast('Error', 'Could not save schedule', 'danger');
+      }
+    };
+    
+    let simSpeedTimeout = null;
+    window.updateSimSpeed = (val) => {
+       document.getElementById('speed-val').innerText = val + 'x';
+       if(simSpeedTimeout) clearTimeout(simSpeedTimeout);
+       simSpeedTimeout = setTimeout(() => {
+          API.postMockTime(sid, parseFloat(val)).catch(e => console.error(e));
+       }, 300); // debounce API calls
+    };
+    
+    window.resetSystem = async () => {
+      try {
+        await API.postReset(sid);
+        showToast('System Reset', 'Config and clock reset.', 'info');
+        const slider = document.getElementById('sim-speed');
+        if(slider) {
+           slider.value = 1;
+           document.getElementById('speed-val').innerText = '1x';
+        }
+      } catch(e) {
+        showToast('Error', 'Could not reset system', 'danger');
+      }
+    };
+    
     // ── Surge Modal ─────────────────────────────────────────────────────────
     window.openSurgeModal = () => {
       const m = document.getElementById('surge-modal');
