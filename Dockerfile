@@ -14,8 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all project files
 COPY . .
 
-# Initialize the Nexus Arena mock database for the container
-RUN python -c "from backend.database import init_db, seed_data; init_db(); seed_data()"
+# DB is initialized automatically by main.py on startup
 
 # Expose the Cloud Run port
 EXPOSE 8080
