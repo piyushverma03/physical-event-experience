@@ -80,30 +80,19 @@ def set_time_multiplier(stadium_id: str, mult: float):
      if stadium_id in _schedules:
          _schedules[stadium_id]["mult"] = mult
 
-def get_stadium_state(sid: str) -> str:
-    sched = _schedules.get(sid)
-    if not sched: return "LOCKED"
-    
-    t = sched["sim_time"]
-    start = sched["start"]
-    end = sched["end"]
-    dev_sec = sched["dev"] * 60
+import math
 
-    if t < (start - dev_sec):
-        return "LOCKED"
-    elif t >= (start - dev_sec) and t < start:
-        return "INGRESS"
-    elif t >= start and t < end:
-        return "FULL"
-    elif t >= end and t < (end + 7200): # 2 hours of egress allowance
-        return "EGRESS"
-    else:
-        return "LOCKED"
+def get_stadium_state(sid: str) -> str:
+    # Deprecated since we use the organic pipeline, returning generic active state
+    return "ORGANIC FLOW"
 
 async def iot_loop():
-    """Main 2-second simulation tick."""
+    """Main 2-second simulation tick driven by dynamic organic pipeline math."""
     tick = 0
     t_last = time.time()
+    
+    # Internal scenario scale clock for the environment agent
+    scenario_clock = 0.0
     
     while True:
         await asyncio.sleep(2)
@@ -117,88 +106,93 @@ async def iot_loop():
             sched = _schedules.get(sid)
             if not sched: continue
 
-            # Advance sim clock
-            dt = real_dt * sched["mult"]
+            # Advance sim clock (fast-forwarding affects the organic cycle)
+            mult = sched.get("mult", 1.0)
+            dt = real_dt * mult
+            scenario_clock += dt
             sched["sim_time"] += dt
             
-            state = get_stadium_state(sid)
+            # 1. Environment Agent (Dynamic Pressure Map)
+            # A sinusoidal wave simulation: Period = ~15 sim-minutes
+            # +ve = Global Influx (Arrivals)
+            # -ve = Global Outflux (Departures)
+            env_pressure = math.sin(scenario_clock / 150.0)
+            is_ingress = env_pressure >= 0
             
-            # Global capacity tracking
+            # Segregate nodes
             floor_nodes = [n for n, meta in _node_meta[sid].items() if meta["type"] == 'floor']
             gate_nodes = [n for n, meta in _node_meta[sid].items() if meta["type"] == 'gate']
             lobby_nodes = [n for n, meta in _node_meta[sid].items() if meta["type"] == 'lobby']
             
-            total_floor_occ = sum(nodes[n] for n in floor_nodes)
-            total_floor_cap = sum(_node_meta[sid][n]["capacity"] for n in floor_nodes)
+            # Track deltas per node to ensure perfect mass conservation (no magically appearing people inside)
+            deltas = {nid: 0 for nid in nodes.keys()}
             
-            is_floor_full = total_floor_occ >= total_floor_cap
+            # 2. EXTERNAL BOUNDARY CONDITIONS
+            if is_ingress:
+                # People arrive at the gates from outside the stadium
+                global_arrivals = int(env_pressure * random.uniform(80, 200) * (dt/2.0))
+                for _ in range(global_arrivals):
+                    deltas[random.choice(gate_nodes)] += 1
+            else:
+                # People depart the stadium through the gates
+                global_pull = int(abs(env_pressure) * random.uniform(100, 250) * (dt/2.0))
+                for _ in range(global_pull):
+                    g = random.choice(gate_nodes)
+                    if (nodes[g] + deltas[g]) > 0:
+                        deltas[g] -= 1
 
+            # 3. INTERNAL PIPELINE KINEMATICS (Fluid Transfer)
+            # Max node transfer rate per 2-second nominal window
+            transfer_rate = 120 * (dt/2.0) 
+
+            if is_ingress:
+                # Flow: Gates -> Lobbies -> Floor
+                for g in gate_nodes:
+                    avail = min(nodes[g] + deltas[g], int(transfer_rate * random.uniform(0.6, 1.2)))
+                    if avail > 0:
+                        deltas[g] -= avail
+                        # Dump flow into lobbies
+                        for _ in range(avail):
+                            deltas[random.choice(lobby_nodes)] += 1
+                            
+                for l in lobby_nodes:
+                    avail = min(nodes[l] + deltas[l], int(transfer_rate * random.uniform(0.8, 1.4)))
+                    if avail > 0:
+                        deltas[l] -= avail
+                        for _ in range(avail):
+                            deltas[random.choice(floor_nodes)] += 1
+            else:
+                # Flow: Floor -> Lobbies -> Gates
+                for f in floor_nodes:
+                    avail = min(nodes[f] + deltas[f], int(transfer_rate * random.uniform(1.2, 2.5)))
+                    if avail > 0:
+                        deltas[f] -= avail
+                        for _ in range(avail):
+                            deltas[random.choice(lobby_nodes)] += 1
+                            
+                for l in lobby_nodes:
+                    avail = min(nodes[l] + deltas[l], int(transfer_rate * random.uniform(0.8, 1.5)))
+                    if avail > 0:
+                        deltas[l] -= avail
+                        for _ in range(avail):
+                            deltas[random.choice(gate_nodes)] += 1
+
+            # 4. MANUAL OVERRIDES / SURGES 
+            for nid, s in _surges.items():
+                if s > 0:
+                    _surges[nid] = max(0, int(s * 0.95)) # Surgeon decay
+                    deltas[nid] += s
+
+            # Apply all verified transfer math
             batch = {}
-            for nid, occ in nodes.items():
-                meta = _node_meta[sid][nid]
-                ntype = meta["type"]
-                cap = meta["capacity"]
-                
-                arrivals = 0
-                departures = 0
-
-                # -- STATE MACHINE LOGIC --
-                if state == "LOCKED":
-                    # Everyone leaves immediately if locked
-                    departures = int(occ * 0.2) + 5
-                
-                elif state == "INGRESS":
-                    if not is_floor_full:
-                        if ntype == 'gate':
-                            arrivals = int(random.uniform(20, 80) * (dt/2.0))
-                            departures = int(random.uniform(15, 60) * (dt/2.0))
-                        elif ntype == 'lobby':
-                            arrivals = int(random.uniform(20, 60) * (dt/2.0))
-                            departures = int(random.uniform(15, 50) * (dt/2.0))
-                        elif ntype == 'floor':
-                            arrivals = int(random.uniform(40, 150) * (dt/2.0))
-                            # Floor keeps filling, no departures
-                    else:
-                        # Floor is full, gates/lobbies empty out
-                        if ntype != 'floor':
-                            departures = int(occ * 0.1) + 10
-                
-                elif state == "FULL":
-                    # Event is happening. Gates and lobbies clear out. Floor stays full.
-                    if ntype == 'floor':
-                        if occ < cap: arrivals = int(random.uniform(10, 30) * (dt/2.0))
-                        departures = int(random.uniform(0, 10) * (dt/2.0))
-                    else:
-                        departures = int(occ * 0.2) + 10
-                
-                elif state == "EGRESS":
-                    # Event ends. Floor empties, rushing the lobbies and gates
-                    if ntype == 'floor':
-                        departures = int(random.uniform(100, 300) * (dt/2.0))
-                    elif ntype == 'lobby':
-                        # Surge from floor
-                        arrivals = int(random.uniform(50, 150) * (dt/2.0))
-                        departures = int(random.uniform(40, 100) * (dt/2.0))
-                    elif ntype == 'gate':
-                        # Huge surge at gates leaving
-                        arrivals = int(random.uniform(80, 200) * (dt/2.0))
-                        departures = int(random.uniform(30, 80) * (dt/2.0))
-
-                # Apply manual surge if active (overrides state)
-                surge = _surges.get(nid, 0)
-                if surge > 0:
-                    _surges[nid] = max(0, int(surge * 0.95))
-                    arrivals += surge
-
-                new_occ = max(0, occ + arrivals - departures)
-                # Cap the maximum locally (except during manual surge to allow red)
-                if surge == 0 and ntype == 'floor' and new_occ > cap:
-                    new_occ = cap
-                    
+            for nid in nodes.keys():
+                new_occ = max(0, nodes[nid] + deltas[nid])
                 nodes[nid] = new_occ
                 batch[nid] = new_occ
 
-            # Push to message bus
+            ui_state = "FLUX: INGRESS" if is_ingress else "FLUX: EGRESS"
+
+            # Push to unified message bus
             if "live_iot_stream" in _bus:
                 await _bus["live_iot_stream"].put({
                     "stadium_id": sid,
@@ -206,6 +200,6 @@ async def iot_loop():
                     "tick": tick,
                     "timestamp": t_now,
                     "sim_time": sched["sim_time"],
-                    "state": state,
-                    "time_mult": sched["mult"]
+                    "state": ui_state,
+                    "time_mult": mult
                 })
